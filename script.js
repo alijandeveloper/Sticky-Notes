@@ -16,7 +16,8 @@ function createNoteElement(note) {
   noteDiv.classList.add("note");
   noteDiv.style.backgroundColor = note.color;
   noteDiv.setAttribute("draggable", "true");
-  
+  noteDiv.setAttribute("data-id", note.id);
+
   noteDiv.innerHTML = `
     <textarea>${note.content}</textarea>
     <div class="note-footer">
@@ -36,6 +37,7 @@ function createNoteElement(note) {
   noteDiv.querySelector("textarea").addEventListener("input", (e) => {
     note.content = e.target.value;
     localStorage.setItem("notes", JSON.stringify(notes));
+    highlightSearchTerm(); // Highlight search term in real-time
   });
 
   // Color change event
@@ -60,15 +62,22 @@ addNoteBtn.addEventListener("click", () => {
   createNoteElement(newNote);
 });
 
-// Search Notes
-searchInput.addEventListener("input", (e) => {
-  const searchTerm = e.target.value.toLowerCase();
+// Search Notes (with real-time highlighting)
+function highlightSearchTerm() {
+  const searchTerm = searchInput.value.toLowerCase();
   document.querySelectorAll(".note").forEach((note) => {
-    note.style.display = note.textContent.toLowerCase().includes(searchTerm)
-      ? "block"
-      : "none";
+    const textArea = note.querySelector("textarea");
+    if (textArea.value.toLowerCase().includes(searchTerm)) {
+      note.style.display = "block";
+      textArea.style.border = "2px solid #3498db"; // Highlight matching notes
+    } else {
+      note.style.display = "none";
+      textArea.style.border = "none";
+    }
   });
-});
+}
+
+searchInput.addEventListener("input", highlightSearchTerm);
 
 // Toggle Dark Mode
 toggleThemeBtn.addEventListener("click", () => {
@@ -84,7 +93,7 @@ if (localStorage.getItem("darkMode") === "true") {
 // Drag and Drop Feature
 document.addEventListener("dragstart", (e) => {
   if (e.target.classList.contains("note")) {
-    e.dataTransfer.setData("text/plain", e.target.id);
+    e.dataTransfer.setData("text/plain", e.target.dataset.id);
   }
 });
 
@@ -95,7 +104,7 @@ document.addEventListener("dragover", (e) => {
 document.addEventListener("drop", (e) => {
   e.preventDefault();
   const draggedId = e.dataTransfer.getData("text/plain");
-  const draggedElement = document.getElementById(draggedId);
+  const draggedElement = document.querySelector(`[data-id="${draggedId}"]`);
   if (draggedElement) {
     notesContainer.appendChild(draggedElement);
   }
