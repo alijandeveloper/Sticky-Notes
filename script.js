@@ -55,7 +55,7 @@ addNoteBtn.addEventListener("click", () => {
   const newNote = {
     id: Date.now(),
     content: "",
-    color: "#fffa65",
+    color: "#6aff65",
   };
   notes.push(newNote);
   localStorage.setItem("notes", JSON.stringify(notes));
